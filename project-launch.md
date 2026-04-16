@@ -4,7 +4,38 @@
 
 - Python 3.14
 - `uv` installed (https://docs.astral.sh/uv/getting-started/installation/)
-- Access to a Neo4j instance with challenge data loaded
+- Access to a Neo4j instance with challenge data loaded (optional - app falls back to mock JSON data)
+
+## Required Python Packages
+
+From `requirements.txt`:
+- streamlit>=1.30.0
+- neo4j>=5.0.0
+- pandas>=2.0.0
+- altair>=5.0.0
+- python-dotenv>=1.0.0
+
+## Environment Variables
+
+### Required Variables
+
+Create a `.env` file in the project root with the following variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NEO4J_URI` | Neo4j database connection URI | `bolt://localhost:7687` |
+| `NEO4J_USERNAME` | Neo4j username | `neo4j` |
+| `NEO4J_PASSWORD` | Neo4j password | `your_password` |
+| `NEO4J_DATABASE` | Neo4j database name (optional, defaults to "neo4j") | `neo4j` |
+
+### Example `.env` file
+
+```dotenv
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=password
+NEO4J_DATABASE=neo4j
+```
 
 ## Quick Start
 
