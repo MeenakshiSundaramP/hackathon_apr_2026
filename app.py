@@ -1568,7 +1568,7 @@ with tab8:
             chart_type = "bar_v"
             chart_kwargs = {"x_col": "project", "y_col": "allocated_cost", "y_title": "Allocated Cost (£)"}
 
-        elif any(w in q for w in ["total cost", "annual cost", "how much", "budget"]):
+        elif any(w in q for w in ["total cost", "annual cost", "how much"]) and not any(w in q for w in ["reduced", "cut", "depriori", "save", "reduce"]):
             if USE_NEO4J:
                 answer_df = run_query("""
                     MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
@@ -1621,6 +1621,50 @@ with tab8:
             answer_text = "**Automation candidates ranked by fit:**"
             chart_type = "bar_v"
             chart_kwargs = {"x_col": "category", "y_col": "potential_saving", "y_title": "Potential Saving (£)", "color_col": "automation_fit"}
+
+        elif any(w in q for w in ["budget", "budget cut", "budget reduc", "reduce budget", "reduced by", "depriori", "cut by", "save money", "reduce cost", "cost saving"]):
+            # Calculate budget cut scenario
+            cut_pct = 10
+            import re
+            pct_match = re.search(r'(\d+)\s*%', q)
+            if pct_match:
+                cut_pct = int(pct_match.group(1))
+
+            if USE_NEO4J:
+                all_proj = run_query("""
+                    MATCH (e:Employee)-[a:ALLOCATED_TO]->(p:Project), (e)-[:MEMBER_OF]->(t:Team)
+                    WITH p.name AS project,
+                         count(DISTINCT e) AS people,
+                         sum(a.percentage) AS total_effort,
+                         sum(toInteger(e.full_cost * a.percentage / 100.0)) AS allocated_cost
+                    RETURN project, people, total_effort, allocated_cost
+                    ORDER BY allocated_cost ASC
+                """)
+                total_cost_val = run_query("MATCH (e:Employee) RETURN sum(e.full_cost) AS total")["total"].iloc[0]
+            else:
+                all_proj = mock_data.get_project_costs(team_filter)
+                total_cost_val = mock_data.get_total_cost(team_filter)["total_cost"].iloc[0]
+
+            target_saving = int(total_cost_val * cut_pct / 100)
+            cumulative = 0
+            deprioritise = []
+            for _, row in all_proj.iterrows():
+                if cumulative >= target_saving:
+                    break
+                cumulative += row["allocated_cost"]
+                deprioritise.append(row)
+
+            if deprioritise:
+                answer_df = pd.DataFrame(deprioritise)
+                answer_df["cumulative_saving"] = answer_df["allocated_cost"].cumsum()
+                answer_text = (f"**Budget cut of {cut_pct}% = £{target_saving:,} saving needed** "
+                               f"(from £{int(total_cost_val):,} total).\n\n"
+                               f"Deprioritise these projects (lowest cost first to minimise disruption):\n\n"
+                               f"Total saving from below: **£{int(cumulative):,}**")
+                chart_type = "bar_h"
+                chart_kwargs = {"x_col": "allocated_cost", "y_col": "project", "x_title": "Allocated Cost (£)"}
+            else:
+                answer_text = f"**Budget cut of {cut_pct}% requested but no projects found to deprioritise.**"
 
         elif any(w in q for w in ["recommend", "top 3", "what should", "action", "suggest"]):
             answer_text = ("**Top 3 Recommendations:**\n\n"
