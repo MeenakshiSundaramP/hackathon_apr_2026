@@ -22,6 +22,7 @@ except Exception:
 
 if not USE_NEO4J:
     import mock_data
+import analyse_utilisation as au
 
 
 def run_query(query, params=None):
@@ -1456,7 +1457,57 @@ with tab8:
         chart_kwargs = {}
 
         # --- Pattern matching ---
-        if any(w in q for w in ["overloaded", "over-committed", "overworked", "burnout", "over capacity"]):
+        if any(w in q for w in ["utilisation", "utilization", "usage", "how busy", "workforce efficiency", "idle", "productive"]):
+            if any(w in q for w in ["team", "by team"]):
+                answer_df = au.utilisation_by_team()
+                answer_text = "**Utilisation by team:**"
+                chart_type = "bar_v"
+                chart_kwargs = {"x_col": "team", "y_col": "avg_utilisation", "y_title": "Avg Utilisation %", "color_col": "utilisation_band"}
+            elif any(w in q for w in ["grade", "seniority"]):
+                answer_df = au.utilisation_by_grade()
+                answer_text = "**Utilisation by grade — are senior staff more overloaded?**"
+                chart_type = "bar_v"
+                chart_kwargs = {"x_col": "grade", "y_col": "avg_utilisation", "y_title": "Avg Utilisation %"}
+            elif any(w in q for w in ["person", "individual", "everyone", "each", "staff"]):
+                answer_df = au.utilisation_by_person()[["name", "role", "team", "allocation", "project_count", "status", "risk", "wasted_cost"]]
+                answer_text = "**Individual utilisation breakdown:**"
+                chart_type = "bar_h"
+                chart_kwargs = {"x_col": "allocation", "y_col": "name", "x_title": "Allocation %"}
+            elif any(w in q for w in ["efficien", "productive", "waste", "idle"]):
+                answer_df = au.utilisation_efficiency()
+                s = au.utilisation_summary()
+                answer_text = (f"**Cost efficiency breakdown** (total: £{s['total_cost']:,}):\n\n"
+                               f"- Productive: £{s['total_cost'] - s['wasted_cost'] - s['excess_cost']:,}\n"
+                               f"- Idle capacity waste: £{s['wasted_cost']:,}\n"
+                               f"- Overallocation excess: £{s['excess_cost']:,}")
+                chart_type = "arc"
+                chart_kwargs = {"theta_col": "amount", "color_col": "category"}
+            elif any(w in q for w in ["rebalanc", "redeploy", "move", "transfer"]):
+                answer_df = au.rebalancing_opportunities()
+                answer_text = f"**{len(answer_df)} rebalancing opportunities identified:**"
+            elif any(w in q for w in ["project"]):
+                answer_df = au.project_utilisation()
+                answer_text = "**Project utilisation — how efficiently each project uses its people:**"
+                chart_type = "bar_v"
+                chart_kwargs = {"x_col": "project", "y_col": "avg_per_person", "y_title": "Avg Allocation per Person %"}
+            else:
+                # Default: summary view
+                s = au.utilisation_summary()
+                answer_df = au.utilisation_by_team()
+                answer_text = (f"**Workforce Utilisation Summary**\n\n"
+                               f"| Metric | Value |\n|---|---|\n"
+                               f"| Headcount | {s['headcount']} |\n"
+                               f"| Avg utilisation | {s['avg_utilisation']}% |\n"
+                               f"| Fully utilised (85-100%) | {s['fully_utilised']} |\n"
+                               f"| Overloaded (>100%) | {s['overloaded']} |\n"
+                               f"| Underutilised (<80%) | {s['underutilised']} |\n"
+                               f"| Idle capacity cost | £{s['wasted_cost']:,} |\n"
+                               f"| Overallocation cost | £{s['excess_cost']:,} |\n\n"
+                               f"**By team:**")
+                chart_type = "bar_v"
+                chart_kwargs = {"x_col": "team", "y_col": "avg_utilisation", "y_title": "Avg Utilisation %", "color_col": "utilisation_band"}
+
+        elif any(w in q for w in ["overloaded", "over-committed", "overworked", "burnout", "over capacity"]):
             if USE_NEO4J:
                 answer_df = run_query("""
                     MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
