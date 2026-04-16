@@ -1,0 +1,41 @@
+{
+  "grade_salary_bands": {
+    "AO":  { "min": 22000, "max": 24500, "midpoint": 23250 },
+    "EO":  { "min": 27000, "max": 31000, "midpoint": 29000 },
+    "HEO": { "min": 33000, "max": 38000, "midpoint": 35500 },
+    "SEO": { "min": 40000, "max": 46000, "midpoint": 43000 },
+    "G7":  { "min": 52000, "max": 60000, "midpoint": 56000 },
+    "G6":  { "min": 67000, "max": 77000, "midpoint": 72000 }
+  },
+  "role_costs": [
+    { "role": "Head of Finance Operations",  "grade": "G6",  "annual_salary": 72000, "day_rate": 340, "on_costs_pct": 30 },
+    { "role": "Head of Commercial",          "grade": "G7",  "annual_salary": 58000, "day_rate": 275, "on_costs_pct": 30 },
+    { "role": "Head of Data and Analytics",  "grade": "G7",  "annual_salary": 57000, "day_rate": 270, "on_costs_pct": 30 },
+    { "role": "Head of Digital Services",    "grade": "G7",  "annual_salary": 58000, "day_rate": 275, "on_costs_pct": 30 },
+    { "role": "Head of IT Operations",       "grade": "G7",  "annual_salary": 56000, "day_rate": 265, "on_costs_pct": 30 },
+    { "role": "Commercial Manager",          "grade": "SEO", "annual_salary": 44000, "day_rate": 210, "on_costs_pct": 30 },
+    { "role": "Cyber Security Analyst",      "grade": "SEO", "annual_salary": 45000, "day_rate": 215, "on_costs_pct": 30 },
+    { "role": "Data Engineer",               "grade": "SEO", "annual_salary": 45000, "day_rate": 215, "on_costs_pct": 30 },
+    { "role": "Finance Manager",             "grade": "SEO", "annual_salary": 43000, "day_rate": 205, "on_costs_pct": 30 },
+    { "role": "Senior HR Business Partner",  "grade": "SEO", "annual_salary": 43000, "day_rate": 205, "on_costs_pct": 30 },
+    { "role": "Senior Software Developer",   "grade": "SEO", "annual_salary": 46000, "day_rate": 220, "on_costs_pct": 30 },
+    { "role": "Business Analyst",            "grade": "HEO", "annual_salary": 36000, "day_rate": 170, "on_costs_pct": 30 },
+    { "role": "Data Analyst",                "grade": "HEO", "annual_salary": 35000, "day_rate": 165, "on_costs_pct": 30 },
+    { "role": "Finance Analyst",             "grade": "HEO", "annual_salary": 35000, "day_rate": 165, "on_costs_pct": 30 },
+    { "role": "HR Business Partner",         "grade": "HEO", "annual_salary": 36000, "day_rate": 170, "on_costs_pct": 30 },
+    { "role": "IT Technician",               "grade": "HEO", "annual_salary": 34000, "day_rate": 160, "on_costs_pct": 30 },
+    { "role": "Procurement Officer",         "grade": "HEO", "annual_salary": 35000, "day_rate": 165, "on_costs_pct": 30 },
+    { "role": "Software Developer",          "grade": "HEO", "annual_salary": 37000, "day_rate": 175, "on_costs_pct": 30 },
+    { "role": "Finance Administrator",       "grade": "EO",  "annual_salary": 28000, "day_rate": 135, "on_costs_pct": 30 },
+    { "role": "HR Adviser",                  "grade": "EO",  "annual_salary": 29000, "day_rate": 140, "on_costs_pct": 30 },
+    { "role": "IT Technician",               "grade": "EO",  "annual_salary": 28000, "day_rate": 135, "on_costs_pct": 30 },
+    { "role": "Junior Developer",            "grade": "EO",  "annual_salary": 29000, "day_rate": 140, "on_costs_pct": 30 },
+    { "role": "IT Support Analyst",          "grade": "AO",  "annual_salary": 23000, "day_rate": 110, "on_costs_pct": 30 }
+  ],
+  "notes": {
+    "on_costs": "Employer NI, pension contributions, and other overheads as percentage of salary",
+    "day_rate": "Calculated as annual_salary / 210 working days, rounded to nearest £5",
+    "working_days_per_year": 210,
+    "source": "Indicative UK Civil Service pay scales 2025-26"
+  }
+}
