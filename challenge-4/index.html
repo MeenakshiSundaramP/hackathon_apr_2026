@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff & Services Finder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "GDS Transport", arial, helvetica, sans-serif;
+      color: #0b0c0c;
+      background: #f3f2f1;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #1d70b8; text-decoration: underline; }
+    a:hover { color: #003078; }
+    a:focus { outline: 3px solid #fd0; outline-offset: 0; background: #fd0; color: #0b0c0c; }
+
+    .header {
+      background: #0b0c0c;
+      padding: 16px 0;
+    }
+    .header__inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .header h1 {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .header p {
+      color: #b1b4b6;
+      font-size: 16px;
+      margin: 4px 0 0;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    #app { min-height: 60vh; }
+
+    /* Search input */
+    .search-input {
+      width: 100%;
+      font-size: 24px;
+      padding: 12px 16px;
+      border: 2px solid #0b0c0c;
+      border-radius: 0;
+      font-family: inherit;
+      margin-bottom: 30px;
+    }
+    .search-input:focus { outline: 3px solid #fd0; outline-offset: 0; border-color: #0b0c0c; }
+
+    /* Team grid (empty state) */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .team-card {
+      background: #fff;
+      border: 1px solid #b1b4b6;
+      padding: 20px;
+      text-decoration: none;
+      color: #0b0c0c;
+      display: block;
+      transition: box-shadow 0.15s;
+    }
+    .team-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); color: #0b0c0c; }
+    .team-card h3 { font-size: 18px; margin-bottom: 8px; color: #1d70b8; }
+    .team-card .meta { font-size: 14px; color: #505a5f; }
+    .team-card .open-badge {
+      display: inline-block;
+      background: #f47738;
+      color: #fff;
+      font-size: 13px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-top: 8px;
+    }
+    .team-card .open-badge.zero { background: #00703c; }
+
+    /* Section headings */
+    .results-section { margin-bottom: 28px; }
+    .results-section h2 {
+      font-size: 18px;
+      border-bottom: 2px solid #1d70b8;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+    .results-section h2 span { font-weight: 400; color: #505a5f; }
+
+    /* Person card (search results) */
+    .person-card {
+      background: #fff;
+      border: 1px solid #b1b4b6;
+      padding: 16px 20px;
+      margin-bottom: 8px;
+      display: block;
+      text-decoration: none;
+      color: #0b0c0c;
+      transition: box-shadow 0.15s;
+    }
+    .person-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); color: #0b0c0c; }
+    .person-card .name { font-weight: 700; font-size: 16px; color: #1d70b8; }
+    .person-card .role-team { font-size: 14px; color: #505a5f; margin: 4px 0; }
+    .person-card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+    /* Skill tags */
+    .tag {
+      display: inline-block;
+      background: #f3f2f1;
+      border: 1px solid #b1b4b6;
+      font-size: 13px;
+      padding: 1px 8px;
+      border-radius: 3px;
+    }
+
+    /* Allocation bar (inline) */
+    .alloc-bar-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .alloc-bar {
+      width: 120px;
+      height: 8px;
+      background: #dee0e2;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .alloc-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+    .alloc-bar-fill.green { background: #00703c; }
+    .alloc-bar-fill.amber { background: #f47738; }
+    .alloc-bar-fill.red { background: #d4351c; }
+    .alloc-label { font-size: 13px; font-weight: 700; }
+    .alloc-label.red { color: #d4351c; }
+    .alloc-label.amber { color: #f47738; }
+
+    /* Priority badges */
+    .priority {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 1px 8px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .priority.high { background: #d4351c; color: #fff; }
+    .priority.medium { background: #f47738; color: #fff; }
+    .priority.low { background: #b1b4b6; color: #0b0c0c; }
+
+    /* Ticket card (search results) */
+    .ticket-card {
+      background: #fff;
+      border: 1px solid #b1b4b6;
+      padding: 14px 20px;
+      margin-bottom: 8px;
+    }
+    .ticket-card .desc { font-size: 14px; margin: 6px 0; }
+    .ticket-card .ticket-meta { font-size: 13px; color: #505a5f; }
+    .ticket-card .ticket-meta a { font-size: 13px; }
+
+    /* Status dot */
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .status-dot.open { background: #f47738; }
+    .status-dot.resolved { background: #00703c; }
+
+    /* No results */
+    .no-results { color: #505a5f; font-size: 16px; padding: 20px 0; }
+
+    /* Back link */
+    .back-link { display: inline-block; margin-bottom: 20px; font-size: 16px; }
+
+    /* Person profile */
+    .profile-header { margin-bottom: 24px; }
+    .profile-header .name { font-size: 30px; font-weight: 700; margin-bottom: 4px; }
+    .profile-header .meta-line { font-size: 16px; color: #505a5f; margin: 4px 0; }
+
+    .grade-badge {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 3px;
+      color: #fff;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    .grade-badge.G6  { background: #4c2c92; }
+    .grade-badge.G7  { background: #1d70b8; }
+    .grade-badge.SEO { background: #10403c; }
+    .grade-badge.HEO { background: #00703c; }
+    .grade-badge.EO  { background: #f47738; }
+    .grade-badge.AO  { background: #b1b4b6; color: #0b0c0c; }
+
+    .profile-section { margin-bottom: 24px; }
+    .profile-section h3 { font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid #b1b4b6; padding-bottom: 4px; }
+
+    /* Stacked allocation bar */
+    .stacked-bar-wrap { margin: 12px 0; }
+    .stacked-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #dee0e2;
+    }
+    .stacked-bar .segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+    .stacked-bar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .stacked-bar-legend .swatch {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .alloc-total {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    /* Team members list on person profile */
+    .member-link {
+      display: inline-block;
+      margin-right: 12px;
+      margin-bottom: 4px;
+    }
+
+    /* Team overview */
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: #fff;
+      border: 1px solid #b1b4b6;
+      padding: 14px 20px;
+      flex: 1;
+      min-width: 140px;
+      text-align: center;
+    }
+    .stat-box .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-box .stat-label { font-size: 13px; color: #505a5f; }
+
+    /* Members table */
+    .members-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .members-table th {
+      text-align: left;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-bottom: 2px solid #0b0c0c;
+      background: #f3f2f1;
+    }
+    .members-table td {
+      font-size: 14px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #b1b4b6;
+    }
+    .members-table tr.clickable { cursor: pointer; }
+    .members-table tr.clickable:hover { background: #f0f4f5; }
+    .members-table tr.over-alloc { background: #fce4e4; }
+    .members-table tr.over-alloc:hover { background: #f9d0d0; }
+
+    /* Ticket list in team view */
+    .ticket-list-item {
+      background: #fff;
+      border: 1px solid #b1b4b6;
+      padding: 12px 16px;
+      margin-bottom: 6px;
+    }
+    .ticket-list-item .desc { font-size: 14px; margin: 4px 0 0; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner">
+      <h1>Directorate of Corporate Services</h1>
+      <p>Staff & Services Finder</p>
+    </div>
+  </header>
+  <main class="container">
+    <div id="app"></div>
+  </main>
+  <script>
+  // ── Data stores ──
+  let DATA = { people: [], tickets: [], orgChart: null };
+  let peopleById = new Map();
+  let teamsByName = new Map();
+  let searchIndex = [];
+
+  // ── Data loading ──
+  async function loadData() {
+    const [people, tickets, orgChart] = await Promise.all([
+      fetch('workforce.json').then(r => r.json()),
+      fetch('tickets.json').then(r => r.json()),
+      fetch('org-chart.json').then(r => r.json()),
+    ]);
+    DATA = { people, tickets, orgChart };
+
+    // peopleById
+    for (const p of people) {
+      peopleById.set(p.employee_id, p);
+    }
+
+    // teamsByName — enrich org-chart teams with member objects and tickets
+    for (const t of orgChart.teams) {
+      const members = t.members.map(id => peopleById.get(id)).filter(Boolean);
+      const teamTickets = tickets.filter(tk => tk.assigned_team === t.team);
+      const openTickets = teamTickets.filter(tk => tk.status === 'open');
+      teamsByName.set(t.team, {
+        ...t,
+        memberObjects: members,
+        tickets: teamTickets,
+        openTickets: openTickets,
+        openTicketCount: openTickets.length,
+      });
+    }
+
+    // Search index
+    for (const p of people) {
+      searchIndex.push({
+        type: 'person',
+        id: p.employee_id,
+        text: [p.name, p.role, p.team, ...p.skills, ...p.allocations.map(a => a.project)].join(' ').toLowerCase(),
+        data: p,
+      });
+    }
+    for (const tk of tickets) {
+      searchIndex.push({
+        type: 'ticket',
+        id: tk.ticket_id,
+        text: [tk.description, tk.category, tk.assigned_team].join(' ').toLowerCase(),
+        data: tk,
+      });
+    }
+  }
+
+  // ── Router ──
+  const app = document.getElementById('app');
+
+  function navigate() {
+    const hash = location.hash || '#/';
+    if (hash.startsWith('#/person/')) {
+      const id = hash.replace('#/person/', '');
+      renderPerson(id);
+    } else if (hash.startsWith('#/team/')) {
+      const name = decodeURIComponent(hash.replace('#/team/', ''));
+      renderTeam(name);
+    } else {
+      renderSearch();
+    }
+  }
+
+  // ── Helpers ──
+  function allocColor(pct) {
+    if (pct > 100) return 'red';
+    if (pct > 80) return 'amber';
+    return 'green';
+  }
+
+  function allocBarHTML(pct) {
+    const col = allocColor(pct);
+    const w = Math.min(pct, 120);
+    return `<span class="alloc-bar-wrap">
+      <span class="alloc-bar"><span class="alloc-bar-fill ${col}" style="width:${w * 100 / 120}%"></span></span>
+      <span class="alloc-label ${col}">${pct}%</span>
+    </span>`;
+  }
+
+  function priorityBadge(p) {
+    return `<span class="priority ${p}">${p}</span>`;
+  }
+
+  function statusDot(s) {
+    return `<span class="status-dot ${s}"></span>`;
+  }
+
+  function formatCategory(cat) {
+    return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  // ── Debounce ──
+  let debounceTimer;
+  function debounce(fn, ms) {
+    return (...args) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  // ── Search View ──
+  let lastSearchQuery = '';
+
+  function renderSearch(restoredQuery) {
+    const query = restoredQuery || lastSearchQuery || '';
+    lastSearchQuery = query;
+
+    let html = `<input class="search-input" type="text" placeholder="Search people, skills, teams, or topics\u2026" value="${query.replace(/"/g, '&quot;')}">`;
+
+    if (!query.trim()) {
+      // Empty state: show all teams
+      html += '<div class="team-grid">';
+      for (const [name, t] of teamsByName) {
+        const badgeClass = t.openTicketCount === 0 ? 'open-badge zero' : 'open-badge';
+        html += `<a class="team-card" href="#/team/${encodeURIComponent(name)}">
+          <h3>${name}</h3>
+          <div class="meta">${t.headcount} people</div>
+          <span class="${badgeClass}">${t.openTicketCount} open ticket${t.openTicketCount !== 1 ? 's' : ''}</span>
+        </a>`;
+      }
+      html += '</div>';
+    } else {
+      const q = query.toLowerCase().trim();
+      const matchedPeople = [];
+      const matchedTickets = [];
+      const matchedTeamNames = new Set();
+
+      for (const entry of searchIndex) {
+        if (!entry.text.includes(q)) continue;
+        if (entry.type === 'person') matchedPeople.push(entry.data);
+        if (entry.type === 'ticket') matchedTickets.push(entry.data);
+      }
+
+      // Direct team name matches
+      for (const [name] of teamsByName) {
+        if (name.toLowerCase().includes(q)) matchedTeamNames.add(name);
+      }
+      // Cross-ref: teams from matched tickets
+      for (const tk of matchedTickets) {
+        matchedTeamNames.add(tk.assigned_team);
+      }
+
+      const hasResults = matchedPeople.length || matchedTeamNames.size || matchedTickets.length;
+
+      if (!hasResults) {
+        html += '<p class="no-results">No results found. Try a different search term.</p>';
+      }
+
+      // People section
+      if (matchedPeople.length) {
+        html += `<div class="results-section"><h2>People <span>(${matchedPeople.length})</span></h2>`;
+        for (const p of matchedPeople) {
+          html += `<a class="person-card" href="#/person/${p.employee_id}">
+            <div class="name">${p.name}</div>
+            <div class="role-team">${p.role} &middot; ${p.team} &middot; ${p.location}</div>
+            <div class="tags">${p.skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>
+            ${allocBarHTML(p.total_allocation)}
+          </a>`;
+        }
+        html += '</div>';
+      }
+
+      // Teams section
+      if (matchedTeamNames.size) {
+        html += `<div class="results-section"><h2>Teams <span>(${matchedTeamNames.size})</span></h2>`;
+        html += '<div class="team-grid">';
+        for (const name of matchedTeamNames) {
+          const t = teamsByName.get(name);
+          if (!t) continue;
+          const badgeClass = t.openTicketCount === 0 ? 'open-badge zero' : 'open-badge';
+          html += `<a class="team-card" href="#/team/${encodeURIComponent(name)}">
+            <h3>${name}</h3>
+            <div class="meta">${t.headcount} people</div>
+            <span class="${badgeClass}">${t.openTicketCount} open ticket${t.openTicketCount !== 1 ? 's' : ''}</span>
+          </a>`;
+        }
+        html += '</div></div>';
+      }
+
+      // Tickets section
+      if (matchedTickets.length) {
+        html += `<div class="results-section"><h2>Related Tickets <span>(${matchedTickets.length})</span></h2>`;
+        for (const tk of matchedTickets) {
+          html += `<div class="ticket-card">
+            ${statusDot(tk.status)} ${priorityBadge(tk.priority)}
+            <span style="font-size:13px;color:#505a5f;margin-left:6px">${formatCategory(tk.category)}</span>
+            <div class="desc">${tk.description}</div>
+            <div class="ticket-meta">${tk.ticket_id} &middot; <a href="#/team/${encodeURIComponent(tk.assigned_team)}">${tk.assigned_team}</a></div>
+          </div>`;
+        }
+        html += '</div>';
+      }
+    }
+
+    app.innerHTML = html;
+
+    // Wire up input
+    const input = app.querySelector('.search-input');
+    if (input) {
+      input.focus();
+      input.addEventListener('input', debounce(e => {
+        lastSearchQuery = e.target.value;
+        renderSearch(e.target.value);
+        // Keep cursor position
+        const pos = e.target.selectionStart;
+        const newInput = app.querySelector('.search-input');
+        if (newInput) { newInput.focus(); newInput.setSelectionRange(pos, pos); }
+      }, 200));
+    }
+  }
+
+  // ── Segment colours for allocation bar chart ──
+  const segmentPalette = ['#1d70b8', '#4c2c92', '#00703c', '#f47738', '#d4351c', '#5694ca', '#912b88'];
+
+  function tenure(startDate) {
+    const start = new Date(startDate);
+    const now = new Date();
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    if (months < 0) { years--; months += 12; }
+    const parts = [];
+    if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+    if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+    return parts.join(', ') || 'Less than a month';
+  }
+
+  // ── Person Profile ──
+  function renderPerson(id) {
+    const p = peopleById.get(id);
+    if (!p) { app.innerHTML = '<p>Person not found.</p>'; return; }
+
+    const col = allocColor(p.total_allocation);
+
+    // Check if this person leads a team
+    let leadsTeam = null;
+    for (const [tName, t] of teamsByName) {
+      if (t.team_lead === p.employee_id) { leadsTeam = t; break; }
+    }
+
+    let html = `<a class="back-link" href="#/">&larr; Back to search</a>`;
+
+    // Header
+    html += `<div class="profile-header">
+      <div class="name">${p.name} <span class="grade-badge ${p.grade}">${p.grade}</span></div>
+      <div class="meta-line">${p.role}</div>
+      <div class="meta-line"><a href="#/team/${encodeURIComponent(p.team)}">${p.team}</a> &middot; ${p.location}</div>
+      <div class="meta-line">Joined ${new Date(p.start_date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })} &middot; ${tenure(p.start_date)}</div>
+    </div>`;
+
+    // Skills
+    html += `<div class="profile-section"><h3>Skills</h3>
+      <div class="tags">${p.skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>
+    </div>`;
+
+    // Allocation stacked bar
+    html += `<div class="profile-section"><h3>Project Allocations</h3>`;
+    html += `<div class="stacked-bar-wrap">`;
+    html += `<div class="stacked-bar">`;
+    for (let i = 0; i < p.allocations.length; i++) {
+      const a = p.allocations[i];
+      const w = a.percentage; // percentage of 100
+      const bg = segmentPalette[i % segmentPalette.length];
+      html += `<div class="segment" style="width:${w}%;background:${bg}" title="${a.project}: ${a.percentage}%">${a.percentage > 15 ? a.project + ' ' + a.percentage + '%' : a.percentage + '%'}</div>`;
+    }
+    html += `</div>`; // .stacked-bar
+    html += `<div class="stacked-bar-legend">`;
+    for (let i = 0; i < p.allocations.length; i++) {
+      const a = p.allocations[i];
+      const bg = segmentPalette[i % segmentPalette.length];
+      html += `<span><span class="swatch" style="background:${bg}"></span>${a.project} (${a.percentage}%)</span>`;
+    }
+    html += `</div>`; // .stacked-bar-legend
+    html += `<div class="alloc-total ${col}">Total: ${p.total_allocation}%</div>`;
+    html += `</div></div>`; // .stacked-bar-wrap, .profile-section
+
+    // Team lead section
+    if (leadsTeam) {
+      html += `<div class="profile-section"><h3>Leads: <a href="#/team/${encodeURIComponent(leadsTeam.team)}">${leadsTeam.team}</a></h3>`;
+      const others = leadsTeam.memberObjects.filter(m => m.employee_id !== p.employee_id);
+      html += `<div>${others.map(m => `<a class="member-link" href="#/person/${m.employee_id}">${m.name} (${m.role})</a>`).join('')}</div>`;
+      html += `</div>`;
+    }
+
+    app.innerHTML = html;
+  }
+
+  // ── Team Overview ──
+  function renderTeam(name) {
+    const t = teamsByName.get(name);
+    if (!t) { app.innerHTML = '<p>Team not found.</p>'; return; }
+
+    const lead = peopleById.get(t.team_lead);
+    const avgAlloc = Math.round(t.memberObjects.reduce((sum, m) => sum + m.total_allocation, 0) / t.memberObjects.length);
+    const overAlloc = t.memberObjects.filter(m => m.total_allocation > 100).length;
+    const totalTickets = t.tickets.length;
+    const resolvedTickets = t.tickets.filter(tk => tk.status === 'resolved').length;
+
+    let html = `<a class="back-link" href="#/">&larr; Back to search</a>`;
+
+    // Header
+    html += `<div class="profile-header">
+      <div class="name">${t.team}</div>
+      <div class="meta-line">Led by: ${lead ? `<a href="#/person/${lead.employee_id}">${lead.name}</a>` : 'Unknown'}</div>
+    </div>`;
+
+    // Stats
+    html += `<div class="stats-row">
+      <div class="stat-box"><div class="stat-value">${t.headcount}</div><div class="stat-label">People</div></div>
+      <div class="stat-box"><div class="stat-value ${allocColor(avgAlloc)}" style="color:${avgAlloc > 100 ? '#d4351c' : avgAlloc > 80 ? '#f47738' : '#00703c'}">${avgAlloc}%</div><div class="stat-label">Avg Allocation</div></div>
+      <div class="stat-box"><div class="stat-value" style="color:${overAlloc > 0 ? '#d4351c' : '#00703c'}">${overAlloc}</div><div class="stat-label">Over-allocated</div></div>
+      <div class="stat-box"><div class="stat-value" style="color:${t.openTicketCount > 0 ? '#f47738' : '#00703c'}">${t.openTicketCount}/${totalTickets}</div><div class="stat-label">Open / Total Tickets</div></div>
+    </div>`;
+
+    // Members table
+    html += `<div class="profile-section"><h3>Team Members</h3>
+    <table class="members-table">
+      <thead><tr><th>Name</th><th>Role</th><th>Grade</th><th>Allocation</th><th>Location</th></tr></thead>
+      <tbody>`;
+    for (const m of t.memberObjects) {
+      const over = m.total_allocation > 100;
+      html += `<tr class="clickable ${over ? 'over-alloc' : ''}" onclick="location.hash='#/person/${m.employee_id}'">
+        <td style="color:#1d70b8;font-weight:700">${m.name}</td>
+        <td>${m.role}</td>
+        <td><span class="grade-badge ${m.grade}">${m.grade}</span></td>
+        <td>${allocBarHTML(m.total_allocation)}</td>
+        <td>${m.location}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+
+    // Open tickets
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    const openSorted = [...t.openTickets].sort((a, b) => (priorityOrder[a.priority] || 9) - (priorityOrder[b.priority] || 9));
+
+    html += `<div class="profile-section"><h3>Open Tickets (${t.openTicketCount})</h3>`;
+    if (openSorted.length === 0) {
+      html += '<p style="color:#505a5f">No open tickets.</p>';
+    } else {
+      for (const tk of openSorted) {
+        html += `<div class="ticket-list-item">
+          ${statusDot('open')} ${priorityBadge(tk.priority)}
+          <span style="font-size:13px;color:#505a5f;margin-left:6px">${formatCategory(tk.category)}</span>
+          <div class="desc">${tk.description}</div>
+          <div style="font-size:12px;color:#505a5f;margin-top:2px">${tk.ticket_id} &middot; Opened ${tk.created_date}</div>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+
+    // Resolved count
+    html += `<div class="profile-section"><h3>Resolved Tickets</h3>
+      <p style="font-size:14px;color:#505a5f">${resolvedTickets} ticket${resolvedTickets !== 1 ? 's' : ''} resolved</p>
+    </div>`;
+
+    app.innerHTML = html;
+  }
+
+  // ── Boot ──
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadData();
+    window.addEventListener('hashchange', navigate);
+    navigate();
+  });
+  </script>
+</body>
+</html>
