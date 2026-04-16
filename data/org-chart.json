@@ -1,0 +1,48 @@
+{
+  "organisation": "Directorate of Corporate Services",
+  "director": "EMP-0001",
+  "teams": [
+    {
+      "team": "Digital Services",
+      "team_lead": "EMP-0001",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 5,
+      "members": ["EMP-0001", "EMP-0002", "EMP-0003", "EMP-0004", "EMP-0005"]
+    },
+    {
+      "team": "IT Service Desk",
+      "team_lead": "EMP-0006",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 6,
+      "members": ["EMP-0006", "EMP-0007", "EMP-0008", "EMP-0009", "EMP-0010", "EMP-0025"]
+    },
+    {
+      "team": "Finance Operations",
+      "team_lead": "EMP-0011",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 4,
+      "members": ["EMP-0011", "EMP-0012", "EMP-0013", "EMP-0014"]
+    },
+    {
+      "team": "HR Business Partnering",
+      "team_lead": "EMP-0015",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 3,
+      "members": ["EMP-0015", "EMP-0016", "EMP-0017"]
+    },
+    {
+      "team": "Commercial",
+      "team_lead": "EMP-0018",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 3,
+      "members": ["EMP-0018", "EMP-0019", "EMP-0020"]
+    },
+    {
+      "team": "Data and Analytics",
+      "team_lead": "EMP-0021",
+      "parent_team": "Directorate of Corporate Services",
+      "headcount": 4,
+      "members": ["EMP-0021", "EMP-0022", "EMP-0023", "EMP-0024"]
+    }
+  ]
+}
