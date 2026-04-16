@@ -47,6 +47,7 @@ Thumbs.db
 *.swp
 *.swo
 .env
+.streamlit/secrets.toml
 
 # Local Neo4j runtime files
 neo4j/
