@@ -187,18 +187,6 @@ We chose Example 4
 
 
 Intent: Save £20 million savings by 2030 by bringing transparency into who is working on what projects, what projects are actively being run, what role personas are required in projects
- 
-# Context:
-5 Statement of Work (SoW) with 5 suppliers covers 200 people working in the department. SoW holds the data about number of different personas included such. as x number of java engineers, y number of AWS cloud engineers, n number of delivery managers.
- 
-# Edge Case:
-If additional personas are required, at times, these are procured from a different SoW, whose actual work responsibility may not match the SoW procurement role title
- 
-# Organisational knowledge context:
-Lead Delivery Owner is the decision maker on budget for projects, people in the projects, roles in the projects.
- 
-Lead Delivery Manager has the details of roles, people working in the project.
- 
 
 # Key Questions a Director Wants Answered
 
