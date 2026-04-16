@@ -169,6 +169,10 @@ make run
 
 Based on https://github.com/Version1/ai-engineering-lab-hackathon-london-2026#
 
+## Neo4j Data Model
+
+![Neo4j Data Model](data/DataModel.png)
+
 # Team HomeOffice A
 
 # Participants
