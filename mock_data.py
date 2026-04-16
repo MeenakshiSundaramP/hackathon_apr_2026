@@ -51,7 +51,9 @@ def _build_dataframes():
             team_members.append({"employee_id": m, "team": t["team"]})
     membership = pd.DataFrame(team_members)
 
-    emp = employees.merge(membership, on="employee_id")
+    emp = employees.merge(membership, on="employee_id", suffixes=('_orig', ''))
+    if 'team_orig' in emp.columns:
+        emp = emp.drop(columns=['team_orig'])
 
     # Build allocations flat table
     alloc_rows = []
@@ -413,7 +415,9 @@ def get_pressure_view(teams):
 def get_project_fragmentation(teams):
     e = _filter(_emp, teams)
     a = _allocations[_allocations["employee_id"].isin(e["employee_id"])]
-    merged = a.merge(e[["employee_id", "role", "team", "total_allocation"]], on="employee_id")
+    merged = a.merge(e[["employee_id", "role", "team", "total_allocation"]], on="employee_id", suffixes=('_alloc', ''))
+    if 'role_alloc' in merged.columns:
+        merged = merged.drop(columns=['role_alloc'])
     grouped = merged.groupby(["name", "role", "team", "total_allocation"]).agg(
         project_count=("project", "count"),
         avg_slice=("percentage", lambda x: round(x.mean())),
