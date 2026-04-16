@@ -1713,6 +1713,91 @@ with tab8:
             chart_type = "bar_v"
             chart_kwargs = {"x_col": "category", "y_col": "avg_days", "y_title": "Avg Days"}
 
+        elif any(w in q for w in ["grade", "grades", "pay band", "seniority"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
+                    RETURN t.name AS team, e.grade AS grade, count(e) AS count
+                    ORDER BY t.name, e.grade
+                """)
+            else:
+                answer_df = mock_data.get_grade_distribution(team_filter)
+            answer_text = "**Grade distribution across teams:**"
+            chart_type = "bar_v"
+            chart_kwargs = {"x_col": "team", "y_col": "count", "y_title": "Count", "color_col": "grade"}
+
+        elif any(w in q for w in ["location", "where", "office", "site"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
+                    RETURN e.location AS location, count(e) AS headcount
+                    ORDER BY headcount DESC
+                """)
+            else:
+                answer_df = mock_data.get_location(team_filter)
+            answer_text = "**Staff distribution by location:**"
+            chart_type = "bar_v"
+            chart_kwargs = {"x_col": "location", "y_col": "headcount", "y_title": "Headcount"}
+
+        elif any(w in q for w in ["tenure", "how long", "service", "new starter", "long serving"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
+                    WITH e.name AS name, e.role AS role, t.name AS team,
+                         duration.between(date(e.start_date), date()).years AS years_service,
+                         CASE
+                           WHEN duration.between(date(e.start_date), date()).months < 12 THEN 'New (<1yr)'
+                           WHEN duration.between(date(e.start_date), date()).months < 24 THEN 'Developing (1-2yr)'
+                           WHEN duration.between(date(e.start_date), date()).months < 48 THEN 'Established (2-4yr)'
+                           ELSE 'Long-serving (4yr+)'
+                         END AS tenure_band
+                    RETURN name, role, team, years_service, tenure_band
+                    ORDER BY years_service DESC
+                """)
+            else:
+                answer_df = mock_data.get_tenure(team_filter)
+            answer_text = "**Staff by tenure:**"
+
+        elif any(w in q for w in ["headcount", "how many people", "team size", "staff count"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
+                    RETURN t.name AS team, count(e) AS headcount
+                    ORDER BY headcount DESC
+                """)
+            else:
+                answer_df = mock_data.get_capacity(team_filter)[["team", "headcount"]]
+            total = answer_df["headcount"].sum()
+            answer_text = f"**Total headcount: {total}** — by team:"
+            chart_type = "bar_v"
+            chart_kwargs = {"x_col": "team", "y_col": "headcount", "y_title": "Headcount"}
+
+        elif any(w in q for w in ["who reports", "reporting", "hierarchy", "org chart", "structure"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:REPORTS_TO]->(mgr:Employee)
+                    MATCH (e)-[:MEMBER_OF]->(t:Team)
+                    RETURN mgr.name AS manager, mgr.role AS role,
+                           collect(e.name) AS direct_reports, count(e) AS report_count
+                    ORDER BY report_count DESC
+                """)
+            else:
+                answer_df = mock_data.get_hierarchy(team_filter)
+            answer_text = "**Reporting structure:**"
+
+        elif any(w in q for w in ["cross team", "cross-team", "dependency", "dependencies", "shared project"]):
+            if USE_NEO4J:
+                answer_df = run_query("""
+                    MATCH (e:Employee)-[:ALLOCATED_TO]->(p:Project), (e)-[:MEMBER_OF]->(t:Team)
+                    WITH p.name AS project, collect(DISTINCT t.name) AS teams, count(DISTINCT t) AS team_count
+                    WHERE team_count > 1
+                    RETURN project, team_count, teams
+                    ORDER BY team_count DESC
+                """)
+            else:
+                answer_df = mock_data.get_cross_team(team_filter)
+            answer_text = "**Projects spanning multiple teams:**"
+
         elif "who is on" in q or "project" in q:
             if USE_NEO4J:
                 projects = run_query("MATCH (p:Project) RETURN p.name AS name")
