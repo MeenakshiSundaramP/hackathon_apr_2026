@@ -1,5 +1,171 @@
 # hackathon_apr_2026
 
+## Local Setup
+
+This project uses `uv` and is pinned to Python `3.14`.
+
+### Prerequisites
+
+- Install Python 3.14
+- Install `uv`: https://docs.astral.sh/uv/getting-started/installation/
+- Have access to a Neo4j instance with challenge data loaded
+
+### 1. Clone and enter the project
+
+```bash
+git clone <your-repo-url>
+cd hackathon_apr_2026
+```
+
+### 2. Create environment variables
+
+Create a `.env` file in the project root:
+
+```dotenv
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_password
+NEO4J_DATABASE=neo4j
+```
+
+### 3. Sync dependencies
+
+```bash
+make sync
+```
+
+This runs `uv sync` and installs runtime + dev dependencies from `pyproject.toml`.
+
+### 4. Run the dashboard
+
+```bash
+make run
+```
+
+This starts Streamlit and serves the app from `app.py`.
+
+### 5. Useful development commands
+
+```bash
+make help
+make lint
+make format
+make test
+make lock
+make clean
+```
+
+### Optional: Export requirements.txt
+
+If you need a pip-style requirements file:
+
+```bash
+make export-requirements
+```
+
+### Troubleshooting
+
+- If `make sync` fails on Python version, confirm `python3.14` is installed and available.
+- If app startup fails with Neo4j auth/connection errors, verify values in `.env`.
+- If there are no results in charts, ensure your Neo4j database has loaded nodes and relationships.
+
+## Run Neo4j in Docker
+
+### 1. Prepare local Neo4j folders
+
+```bash
+make neo4j-prepare
+```
+
+### 2. Start Neo4j with APOC enabled
+
+```bash
+make neo4j-up
+```
+
+Neo4j Browser: http://localhost:7474
+
+Bolt URI for app config: `bolt://localhost:7687`
+
+### 3. Update `.env` values
+
+Use these values (or your own password if changed):
+
+```dotenv
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=password
+NEO4J_DATABASE=neo4j
+```
+
+### 4. Check the database is reachable
+
+```bash
+make neo4j-status
+```
+
+## Load Challenge Data into Neo4j
+
+### Option A: Load from reusable script (recommended)
+
+```bash
+make neo4j-load
+```
+
+### Option B: Load manually in Neo4j Browser
+
+Open Neo4j Browser at http://localhost:7474 and run the same statements from `queries/load-data.cypher`.
+
+### Verify data loaded
+
+```cypher
+MATCH (e:Employee) RETURN count(e) AS employees;
+MATCH (t:Team) RETURN count(t) AS teams;
+MATCH (tk:Ticket) RETURN count(tk) AS tickets;
+MATCH (p:Project) RETURN count(p) AS projects;
+```
+
+After this, start the app:
+
+```bash
+make run
+```
+
+### Stop and restart Docker Neo4j
+
+```bash
+make neo4j-stop
+make neo4j-start
+```
+
+### Additional Neo4j make commands
+
+```bash
+make neo4j-shell
+make neo4j-logs
+make neo4j-down
+```
+
+## One-command bootstrap
+
+Use this to set up everything needed for local development in one go:
+
+```bash
+make dev-up
+```
+
+This will:
+
+- run `make sync`
+- run `make neo4j-up`
+- run `make neo4j-load`
+
+Then start the app with:
+
+```bash
+make run
+```
+
 
 Based on https://github.com/Version1/ai-engineering-lab-hackathon-london-2026#
 

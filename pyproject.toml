@@ -1,0 +1,26 @@
+[project]
+name = "hackathon-apr-2026"
+version = "0.1.0"
+description = "Workforce visibility dashboard for hackathon challenge 4"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "altair>=5.0.0",
+    "neo4j>=5.0.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "streamlit>=1.30.0",
+]
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.5.0",
+]
+
+[tool.uv]
+package = false
