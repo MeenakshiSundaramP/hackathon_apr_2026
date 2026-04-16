@@ -1,19 +1,32 @@
 PYTHON := uv run python
 NEO4J_CONTAINER := workforce-neo4j
-NEO4J_USER := neo4j
-NEO4J_PASSWORD := password
 NEO4J_PLATFORM ?= linux/amd64
 
 .DEFAULT_GOAL := help
 
+-include .env
 
-.PHONY: help sync run test lint format lock export-requirements clean dev-up \
+export NEO4J_URI
+export NEO4J_USERNAME
+export NEO4J_PASSWORD
+export NEO4J_DATABASE
+
+NEO4J_USERNAME ?= neo4j
+NEO4J_PASSWORD ?= password
+NEO4J_DATABASE ?= neo4j
+
+
+.PHONY: help sync run test lint format lock export-requirements clean dev-up run-mockdata \
 	neo4j-prepare neo4j-up neo4j-stop neo4j-start neo4j-down neo4j-load neo4j-shell neo4j-status neo4j-logs
 
 
 help: ## Show all make targets and their purposes
 	@echo "Available targets:"
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_.-]+:.*## / {printf "  make %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+require-neo4j-env: ## Validate Neo4j credentials are available from .env
+	@test -n "$(NEO4J_USERNAME)" || (echo "NEO4J_USERNAME is missing. Add it to .env" && exit 1)
+	@test -n "$(NEO4J_PASSWORD)" || (echo "NEO4J_PASSWORD is missing. Add it to .env" && exit 1)
 
 sync: ## Install/update dependencies from pyproject.toml
 	uv sync
@@ -46,16 +59,19 @@ dev-up: ## Sync Python deps, start Neo4j, and load data
 	$(MAKE) neo4j-load
 	@echo "Dev environment ready. Run 'make run' to start Streamlit."
 
+run-mockdata: ## Run Streamlit app only (no Neo4j setup)
+	USE_MOCK_DATA=true uv run streamlit run app.py
+
 neo4j-prepare: ## Create Neo4j directories and copy JSON files
 	mkdir -p neo4j/data neo4j/logs neo4j/plugins neo4j/import
 	cp data/*.json neo4j/import/
 
-neo4j-up: neo4j-prepare ## Start Neo4j container with APOC enabled
-	docker run -d \
+neo4j-up: neo4j-prepare require-neo4j-env ## Start Neo4j container with APOC enabled
+	@docker run -d \
 		--platform $(NEO4J_PLATFORM) \
 		--name $(NEO4J_CONTAINER) \
 		-p 7474:7474 -p 7687:7687 \
-		-e NEO4J_AUTH=$(NEO4J_USER)/$(NEO4J_PASSWORD) \
+		-e NEO4J_AUTH=$(NEO4J_USERNAME)/$(NEO4J_PASSWORD) \
 		-e NEO4J_PLUGINS='["apoc"]' \
 		-e NEO4J_apoc_export_file_enabled=true \
 		-e NEO4J_apoc_import_file_enabled=true \
@@ -75,15 +91,15 @@ neo4j-start: ## Start existing Neo4j container
 neo4j-down: ## Remove Neo4j container
 	docker rm -f $(NEO4J_CONTAINER)
 
-neo4j-load: ## Load JSON data into Neo4j from queries/load-data.cypher
-	docker exec -i $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USER) -p $(NEO4J_PASSWORD) < queries/load-data.cypher
+neo4j-load: require-neo4j-env ## Load JSON data into Neo4j from queries/load-data.cypher
+	@docker exec -i $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USERNAME) -p $(NEO4J_PASSWORD) -d $(NEO4J_DATABASE) < queries/load-data.cypher
 
-neo4j-shell: ## Open cypher-shell in running Neo4j container
-	docker exec -it $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USER) -p $(NEO4J_PASSWORD)
+neo4j-shell: require-neo4j-env ## Open cypher-shell in running Neo4j container
+	@docker exec -it $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USERNAME) -p $(NEO4J_PASSWORD) -d $(NEO4J_DATABASE)
 
-neo4j-status: ## Check Neo4j container/database availability
+neo4j-status: require-neo4j-env ## Check Neo4j container/database availability
 	docker ps --filter "name=$(NEO4J_CONTAINER)" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-	docker exec -i $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USER) -p $(NEO4J_PASSWORD) "RETURN 'ok' AS status;"
+	@docker exec -i $(NEO4J_CONTAINER) cypher-shell -u $(NEO4J_USERNAME) -p $(NEO4J_PASSWORD) -d $(NEO4J_DATABASE) "RETURN 'ok' AS status;"
 
 neo4j-logs: ## Tail Neo4j container logs
 	docker logs -f $(NEO4J_CONTAINER)
