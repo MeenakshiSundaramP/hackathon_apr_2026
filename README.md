@@ -180,14 +180,6 @@ Based on https://github.com/Version1/ai-engineering-lab-hackathon-london-2026#
 * Baharak Askarikeya
 * Ezhil Suresh Chockalingham
 
-
-# Subject
-
-We chose Example 4
-
-
-Intent: Save £20 million savings by 2030 by bringing transparency into who is working on what projects, what projects are actively being run, what role personas are required in projects
-
 # Key Questions a Director Wants Answered
 
 1. People & Capacity
