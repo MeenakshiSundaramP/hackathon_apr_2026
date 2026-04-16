@@ -19,7 +19,7 @@ def _build_dataframes():
     workforce = _load_json("workforce.json")
     org = _load_json("org-chart.json")
     tickets = _load_json("tickets.json")
-    costs = _load_json("workforce_cost.json")
+    costs = _load_json("workforce-cost.json")
 
     # Build role+grade -> cost lookup
     cost_map = {}
