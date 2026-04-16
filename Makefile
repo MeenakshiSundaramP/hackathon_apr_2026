@@ -2,6 +2,7 @@ PYTHON := uv run python
 NEO4J_CONTAINER := workforce-neo4j
 NEO4J_USER := neo4j
 NEO4J_PASSWORD := password
+NEO4J_PLATFORM ?= linux/amd64
 
 .DEFAULT_GOAL := help
 
@@ -51,6 +52,7 @@ neo4j-prepare: ## Create Neo4j directories and copy JSON files
 
 neo4j-up: neo4j-prepare ## Start Neo4j container with APOC enabled
 	docker run -d \
+		--platform $(NEO4J_PLATFORM) \
 		--name $(NEO4J_CONTAINER) \
 		-p 7474:7474 -p 7687:7687 \
 		-e NEO4J_AUTH=$(NEO4J_USER)/$(NEO4J_PASSWORD) \

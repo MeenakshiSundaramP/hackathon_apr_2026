@@ -47,3 +47,6 @@ Thumbs.db
 *.swp
 *.swo
 .env
+
+# Local Neo4j runtime files
+neo4j/

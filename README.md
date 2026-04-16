@@ -68,6 +68,7 @@ make export-requirements
 - If `make sync` fails on Python version, confirm `python3.14` is installed and available.
 - If app startup fails with Neo4j auth/connection errors, verify values in `.env`.
 - If there are no results in charts, ensure your Neo4j database has loaded nodes and relationships.
+- If `make neo4j-up` fails with `tls: bad record MAC` on macOS, run `make neo4j-up NEO4J_PLATFORM=linux/amd64`.
 
 ## Run Neo4j in Docker
 
